@@ -12,6 +12,7 @@
             </div>
             <div class="form-group">
                 <label>审核中弹窗重制</label>
+                <p>测试11111</p>
                 <div class="input-container">
                     <p style="margin: 0; font-weight: 600;">+54</p>
                     <input type="text" v-model="pendingMobile" class="text-input" placeholder="请输入手机号" maxlength="10">
