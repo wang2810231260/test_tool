@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Test Dashboard</title>
+    <!-- CSS Externalization -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Vue.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- http-vue-loader -->
+    <script src="https://unpkg.com/http-vue-loader"></script>
+    <style>
+        /* Toast Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-item {
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toast-success {
+            background-color: #10b981;
+        }
+
+        .toast-error {
+            background-color: #ef4444;
+        }
+
+        .toast-info {
+            background-color: #3b82f6;
+        }
+
+        .toast-warning {
+            background-color: #f59e0b;
+        }
+
+        /* Vue Transition for Toasts */
+        .toast-enter-active,
+        .toast-leave-active {
+            transition: all 0.3s ease;
+        }
+
+        .toast-enter {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        .toast-leave-to {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                Dashboard
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <div class="nav-link" @click="toggleOrderSubmenu" style="justify-content: space-between;">
+                        <span>订单管理</span>
+                        <span style="font-size: 0.8em; transition: transform 0.2s;"
+                            :style="{ transform: orderSubmenuOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }">▼</span>
+                    </div>
+                    <ul class="sub-menu" :class="{ open: orderSubmenuOpen }">
+                        <li class="sub-item">
+                            <div class="sub-link" :class="{ active: activeTab === 'order-generation' }"
+                                @click="switchTab('order-generation')">
+                                订单生成
+                            </div>
+                        </li>
+                        <li class="sub-item">
+                            <div class="sub-link" :class="{ active: activeTab === 'payout-repayment' }"
+                                @click="switchTab('payout-repayment')">
+                                放还款
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link" :class="{ active: activeTab === 'product-management' }"
+                        @click="switchTab('product-management')">
+                        产品管理
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link" :class="{ active: activeTab === 'activity-management' }"
+                        @click="switchTab('activity-management')">
+                        活动管理
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div class="nav-link" @click="toggleCouponSubmenu" style="justify-content: space-between;">
+                        <span>优惠券管理</span>
+                        <span style="font-size: 0.8em; transition: transform 0.2s;"
+                            :style="{ transform: couponSubmenuOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }">▼</span>
+                    </div>
+                    <ul class="sub-menu" :class="{ open: couponSubmenuOpen }">
+                        <li class="sub-item">
+                            <div class="sub-link" :class="{ active: activeTab === 'coupon-template' }"
+                                @click="switchTab('coupon-template')">
+                                优惠券模版
+                            </div>
+                        </li>
+                        <li class="sub-item">
+                            <div class="sub-link" :class="{ active: activeTab === 'user-coupon' }"
+                                @click="switchTab('user-coupon')">
+                                用户优惠券
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">退出登录</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <order-management v-show="activeTab === 'order-generation'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></order-management>
+            <payout-payment v-show="activeTab === 'payout-repayment'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></payout-payment>
+            <product-management v-show="activeTab === 'product-management'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></product-management>
+            <activity-management v-show="activeTab === 'activity-management'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></activity-management>
+            <coupon-template v-show="activeTab === 'coupon-template'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></coupon-template>
+            <user-coupon v-show="activeTab === 'user-coupon'" :sys-codes="sysCodes"
+                :active-tab="activeTab"></user-coupon>
+        </main>
+
+        <!-- Global Toast Container -->
+        <transition-group name="toast" tag="div" class="toast-container">
+            <div v-for="toast in toasts" :key="toast.id" :class="['toast-item', 'toast-' + toast.type]">
+                <span v-text="toast.message"></span>
+            </div>
+        </transition-group>
+    </div>
+
+    <!-- Inject Flask Data -->
+    <script>
+        window.SYS_CODES = JSON.parse('{{ sys_codes | tojson | safe }}');
+    </script>
+
+    <!-- Vue Components & App Logic -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>

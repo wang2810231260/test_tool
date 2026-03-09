@@ -1,0 +1,34 @@
+# 根据token查找用户id
+get_userId_by_token: "SELECT account_id FROM account_login WHERE access_token = %s"
+# 更新用户为直批
+update_user_platformMark: "UPDATE account_base SET platform_mark=666 ,is_test_user=1 WHERE id =%s"
+# 查找待放款订单 
+get_payout_order: "SELECT id from orders WHERE account_id in (%s) and check_status in (5,12)"
+# 查找待还款订单 
+get_payment_order: "SELECT id from orders WHERE account_id in (%s) and check_status in (7,9,11)"
+#查找用户放款流水
+get_payout_info_by_order_id: "SELECT order_no from order_payout WHERE biz_order_id in (%s) and pay_status=1 order by ctime desc limit 1"
+#查找用户还款流水
+get_payment_info_by_order_id: "SELECT order_no,floor(amount/100) as amount from order_payment WHERE biz_order_id in (%s) and pay_status=1 order by ctime desc limit 1"
+# 根据手机号和sys_code查找用户id
+get_userId_by_mobile_and_sys_code: "SELECT id FROM account_base WHERE mobile = %s and sys_code = %s"
+# 将订单置为失效 (状态改为待填充信息)
+invalid_order_by_userId: "UPDATE orders SET check_status = 10 WHERE account_id = %s ORDER BY ctime DESC LIMIT 1"
+# 将活体置为失效 ()
+invalid_liveness_by_userId: "UPDATE account_live_verify_record SET expire_time = 1583031600000 WHERE id = %s"
+#查找用户活体
+get_liveness_by_userId: "SELECT id FROM account_live_verify_record WHERE account_id = %s and expire_time > %s"
+#查找用户最新一笔订单
+get_order_by_userId: "SELECT id FROM orders WHERE account_id = %s ORDER BY ctime DESC LIMIT 1"
+#将订单置为审核中
+update_order_check_status: "UPDATE orders SET check_status = 2 WHERE id = %s"
+#查找用户产品
+get_product_by_userId: "SELECT stage_info FROM account_quota_conf WHERE account_id=%s"
+#更新用户产品
+update_product_by_userId: "UPDATE account_quota_conf SET stage_info = %s WHERE account_id = %s"
+#删除优惠券
+delete_coupon: "DELETE FROM coupon WHERE id = %s"
+# 删除好评记录
+delete_popup_page: "DELETE FROM rating_record WHERE account_id = %s"
+
+

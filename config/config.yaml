@@ -1,0 +1,41 @@
+base_url: "https://api-test-arb.jinglewill.com"
+# base_url: "https://tt.orcredi.com"
+# aes_key_hex: "D5D69840CE30ACCE500260F2B4175A0A"
+# aes_iv_hex: "90290C9B056645B8FB937CB656496B5E"
+sys_code: "ToCredi"
+sys_codes:
+  - "ToCredi"
+  - "Pitage"
+  - "Cuentasoles"
+  - "Meda"
+  - "CashiCashi"
+  - "AtomomoX"
+
+db:
+  host: "172.16.110.200"
+  port: 3306
+  user: "root"
+  password: "JXCi96ZQk51oMgzC"
+  database: "micro_loan_test"
+  charset: "utf8mb4"
+
+redis:
+  host: "172.16.110.200"
+  port: 6379
+  password: "JXCi96ZQk51oMgzC"
+  db: 0
+
+# Test Execution Order
+test_order:
+  - test_login.py
+  - test_update_user_info.py
+  # - test_live.py
+  # - test_order_apply.py
+  # - test_order_comfirm.py
+  # - test_payout.py
+  # - test_payment.py
+  # - test_reloan.py
+  # - test_update_user_info.py
+  # - test_order_apply.py
+  # - test_payout.py
+

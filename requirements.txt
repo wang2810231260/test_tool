@@ -1,0 +1,9 @@
+pytest
+allure-pytest
+requests
+pyyaml
+pycryptodome
+pytest-ordering
+pymysql
+Flask
+gunicorn

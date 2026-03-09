@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Interface Test Runner</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-secondary: #6b7280;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: var(--text-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .captcha-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .captcha-group input {
+            flex: 1;
+        }
+
+        .captcha-img {
+            height: 46px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-message {
+            color: #ef4444;
+            background-color: #fef2f2;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+            /* Hidden by default */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+
+        <div class="error-message" id="error-message">
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="captcha">Verification Code</label>
+                <div class="captcha-group">
+                    <input type="text" id="captcha" name="captcha" required autocomplete="off">
+                    <img id="captcha-img" src="" alt="Captcha" class="captcha-img" onclick="loadCaptcha()">
+                    <input type="hidden" id="captcha-uuid" name="captcha_uuid">
+                </div>
+            </div>
+
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script>
+        function loadCaptcha() {
+            fetch('/captcha')
+                .then(response => response.json())
+                .then(data => {
+                    const img = document.getElementById('captcha-img');
+                    img.src = data.img;
+                    document.getElementById('captcha-uuid').value = data.uuid;
+                })
+                .catch(error => console.error('Error loading captcha:', error));
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent default browser form submission
+
+            const formData = new FormData(this);
+            const errorDiv = document.getElementById('error-message');
+
+            fetch('/login', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if ('status' in data) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = data.message;
+                        loadCaptcha();
+                        document.getElementById('captcha').value = '';
+                    } else {
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'A network error occurred: ' + error.message;
+                });
+        });
+
+        document.addEventListener('DOMContentLoaded', loadCaptcha);
+    </script>
+</body>
+
+</html>
