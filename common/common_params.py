@@ -28,8 +28,8 @@ def get_admin_token():
     if _admin_token is not None:
         return _admin_token
     # Try to get from Flask session if not in memory
-    from flask import session
-    if 'admin_token' in session:
+    from flask import session, has_request_context
+    if has_request_context() and 'admin_token' in session:
         return session['admin_token']
         
     return os.environ.get('ADMIN_TOKEN')

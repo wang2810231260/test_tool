@@ -1,7 +1,7 @@
 <template>
     <section id="order-generation" class="content-section active">
         <h1 class="section-title">订单生成</h1>
-        
+
         <div class="form-container">
             <div class="form-group">
                 <label>选择 APP</label>
@@ -22,7 +22,6 @@
                         <option value="shipped">放款中</option>
                         <option value="payout_failed">放款失败</option>
                         <option value="paid">还款页面</option>
-                        <option value="overdue_repayment">逾期还款页面</option>
                         <option value="reloan_trial">复贷试算</option>
                     </select>
                     <button :disabled="generating" class="action-btn" @click="generateOrder">生成订单</button>
@@ -41,9 +40,11 @@
 
             <div v-if="showResult" class="result-wrapper" style="display: block;">
                 <label style="font-weight: 600; display: block; margin-bottom: 8px;">生成手机号</label>
-                <input type="text" v-model="generatedMobile" class="text-input" :placeholder="resultPlaceholder" :readonly="!isSuccess">
+                <input type="text" v-model="generatedMobile" class="text-input" :placeholder="resultPlaceholder"
+                    :readonly="!isSuccess">
                 <label style="font-weight: 600; display: block; margin-bottom: 8px; margin-top: 10px;">用户id</label>
-                <input type="text" v-model="generatedUserId" class="text-input" placeholder="等待生成..." :readonly="!isSuccess">
+                <input type="text" v-model="generatedUserId" class="text-input" placeholder="等待生成..."
+                    :readonly="!isSuccess">
             </div>
         </div>
 
@@ -77,7 +78,8 @@
                 <label>当前订单置为失效</label>
                 <div class="input-container">
                     <p style="margin: 0; font-weight: 600;">+54</p>
-                    <input type="text" v-model="invalidOrderMobile" class="text-input" placeholder="请输入手机号" maxlength="10">
+                    <input type="text" v-model="invalidOrderMobile" class="text-input" placeholder="请输入手机号"
+                        maxlength="10">
                     <button :disabled="invalidatingOrder" class="action-btn" @click="orderInvalid">失效</button>
                 </div>
             </div>
@@ -85,7 +87,8 @@
                 <label>当前用户活体置为失效</label>
                 <div class="input-container">
                     <p style="margin: 0; font-weight: 600;">+54</p>
-                    <input type="text" v-model="invalidLivenessMobile" class="text-input" placeholder="请输入手机号" maxlength="10">
+                    <input type="text" v-model="invalidLivenessMobile" class="text-input" placeholder="请输入手机号"
+                        maxlength="10">
                     <button :disabled="invalidatingLiveness" class="action-btn" @click="livenessInvalid">失效</button>
                 </div>
             </div>
@@ -93,7 +96,8 @@
                 <label>当前订单置为审核中</label>
                 <div class="input-container">
                     <p style="margin: 0; font-weight: 600;">+54</p>
-                    <input type="text" v-model="orderToPendingMobile" class="text-input" placeholder="请输入手机号" maxlength="10">
+                    <input type="text" v-model="orderToPendingMobile" class="text-input" placeholder="请输入手机号"
+                        maxlength="10">
                     <button :disabled="orderToPending" class="action-btn" @click="orderInvalidToPending">置为审核</button>
                 </div>
             </div>
@@ -163,6 +167,14 @@ module.exports = {
                     this.$root.showToast('Error: ' + data.substring(10), 'error');
                     eventSource.close();
                     this.generating = false;
+                    return;
+                }
+
+                if (data === '>>>TOKEN_EXPIRED') {
+                    eventSource.close();
+                    this.generating = false;
+                    this.$root.showToast('管理员 Token 已失效，即将退出登录...', 'error');
+                    setTimeout(() => { window.location.href = '/logout'; }, 1500);
                     return;
                 }
 

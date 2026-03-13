@@ -1,8 +1,10 @@
 import requests
 import json
-import uuid
 from common.logger import logger
 from common import common_params
+
+class TokenExpiredError(Exception):
+    """Raised when admin token is expired (401 response)."""
 
 def payout_callback(order_no,status):
     """
@@ -22,9 +24,15 @@ def payout_callback(order_no,status):
         headers = {"Content-Type": "application/json","Authorization":f'{token}'}
         logger.info(f"Callback Headers: {json.dumps(headers)}")
         response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code == 401:
+            logger.error(f"Callback Request Failed: 401 - token已失效，即将退出登录")
+            common_params.set_admin_token(None)
+            raise TokenExpiredError("Admin token expired (401)")
         if response.status_code != 200:
             logger.error(f"Callback Request Failed: {response.status_code} - {response.text}")
         logger.info(f"Callback Response: {response.status_code} - {response.text}")
+    except TokenExpiredError:
+        raise
     except Exception as e:
         logger.error(f"Callback Request Failed: {e}")
 def payment_callback(order_no,status,amount):
@@ -45,24 +53,16 @@ def payment_callback(order_no,status,amount):
     try:
         headers = {"Content-Type": "application/json","Authorization":f'{token}'}
         response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code == 401:
+            logger.error(f"Callback Request Failed: 401 - token已失效，即将退出登录")
+            common_params.set_admin_token(None)
+            raise TokenExpiredError("Admin token expired (401)")
         if response.status_code != 200:
             logger.error(f"Callback Request Failed: {response.status_code} - {response.text}")
         logger.info(f"Callback Response: {response.status_code} - {response.text}")
+    except TokenExpiredError:
+        raise
     except Exception as e:
         logger.error(f"Callback Request Failed: {e}")
 
-        payload = {
-            "amount": amount_str,
-            "orderNo": order_no,
-            "status":"SUCCESS"
-        }
-        logger.info(f"Sending payment Callback for {order_no}. Payload: {json.dumps(payload)}")
-        try:
-            headers = {"Content-Type": "application/json","Authorization":f'{token}'}
-            response = requests.post(url, json=payload, headers=headers, timeout=10)
-            if response.status_code != 200:
-                logger.error(f"Callback Request Failed: {response.status_code} - {response.text}")
-            logger.info(f"Callback Response: {response.status_code} - {response.text}")
-        except Exception as e:
-            logger.error(f"Callback Request Failed: {e}")   
 

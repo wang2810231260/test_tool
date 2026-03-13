@@ -14,7 +14,6 @@ STATUS_TO_TEST_MAP = {
     'shipped': ['testcases/test_login.py', 'testcases/test_update_user_info.py', 'testcases/test_live.py','testcases/test_order_apply.py','testcases/test_order_comfirm.py'],
     'payout_failed': ['testcases/test_login.py', 'testcases/test_update_user_info.py', 'testcases/test_live.py','testcases/test_order_apply.py','testcases/test_order_comfirm.py','testcases/test_payout_failed.py'],
     'paid': ['testcases/test_login.py', 'testcases/test_update_user_info.py', 'testcases/test_live.py','testcases/test_order_apply.py','testcases/test_order_comfirm.py','testcases/test_payout.py'],
-    'overdue_repayment': ['testcases/test_login.py', 'testcases/test_payment.py'],
     'reloan_trial': ['testcases/test_login.py', 'testcases/test_update_user_info.py', 'testcases/test_live.py','testcases/test_order_apply.py','testcases/test_order_comfirm.py','testcases/test_payout.py','testcases/test_payment.py','testcases/test_reloan.py']
 }
 
@@ -23,12 +22,18 @@ def run_tests():
     if 'logged_in' not in session:
         return Response("data: >>>ERROR::Unauthorized\n\n", mimetype='text/event-stream')
 
+    token = common_params.get_admin_token()
+    admin_token_str = str(token) if token else None
+
     def generate():
         cwd = os.getcwd()
         env = os.environ.copy()
         env['PYTHONPATH'] = cwd
         env['USE_WEB_ORDER'] = '1'
         env['PYTHONUNBUFFERED'] = '1'
+        
+        if admin_token_str:
+            env['ADMIN_TOKEN'] = admin_token_str
         
         process = subprocess.Popen(
             ['pytest', '-s'], 
@@ -44,6 +49,10 @@ def run_tests():
         for line in iter(process.stdout.readline, ''):
             if line:
                 yield f"data: {line}\n\n"
+                if 'Callback Request Failed: 401' in line or 'token已失效' in line:
+                    process.terminate()
+                    yield "data: >>>TOKEN_EXPIRED\n\n"
+                    return
                 
         process.stdout.close()
         process.wait()
@@ -104,6 +113,10 @@ def generate_order_tests():
             for line in iter(process.stdout.readline, ''):
                 if line:
                     yield f"data: {line}\n\n"
+                    if 'Callback Request Failed: 401' in line or 'token已失效' in line:
+                        process.terminate()
+                        yield "data: >>>TOKEN_EXPIRED\n\n"
+                        return
                     if ">>>CURRENT_CASE:::" in line:
                         parts = line.split(">>>CURRENT_CASE:::")
                         if len(parts) > 1:

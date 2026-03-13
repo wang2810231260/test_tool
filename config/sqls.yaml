@@ -30,5 +30,10 @@ update_product_by_userId: "UPDATE account_quota_conf SET stage_info = %s WHERE a
 delete_coupon: "DELETE FROM coupon WHERE id = %s"
 # 删除好评记录
 delete_popup_page: "DELETE FROM rating_record WHERE account_id = %s"
-
+# 标记已读
+update_coupon_user: "UPDATE account_coupon SET is_read=0 WHERE id = %s"  
+# 删除用户优惠券
+delete_coupon_user: "DELETE FROM account_coupon WHERE id = %s" 
+# 将用户优惠券置为过期
+update_coupon_user_status: "UPDATE account_coupon SET status=4 WHERE id = %s"
 

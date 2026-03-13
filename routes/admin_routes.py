@@ -381,5 +381,106 @@ def reset3():
 
         return json.dumps({"code": 500, "msg": str(e)})
 
-    
+@admin_bp.route('/get_coupon_user',methods=['GET'])
+def get_user_coupon():
+    current = request.args.get('current', default=1, type=int)
+    size = request.args.get('size', default=10, type=int)
+    token = common_params.get_admin_token()
+    if token is None:
+        return json.dumps({"code": 401, "msg": "token过期"})
+    url = f"https://admin-api-test-arb.jinglewill.com/api/accountCoupon?current={current}&size={size}"
+    try:
+        headers = {"Content-Type": "application/json","Authorization":f'{token}'}
+        response = requests.get(url, timeout=10,headers=headers)
+        return json.dumps({"code": 200, "msg": "获取用户优惠券成功", "data": response.json()})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
       
+@admin_bp.route('/to_read',methods=['GET'])
+def to_read():
+    id = request.args.get('id')
+    if not id:
+        return json.dumps({"code": 400, "msg": "id不能为空"})
+    db=DBUtils()
+    try:
+        db.execute_db("update_coupon_user",(id,))
+        return json.dumps({"code": 200, "msg": "标记已读成功"})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
+    finally:
+        db.close()
+@admin_bp.route('/delete_coupon_user',methods=['GET'])
+def delete_coupon_user():
+    id = request.args.get('id')
+    if not id:
+        return json.dumps({"code": 400, "msg": "id不能为空"})
+    db=DBUtils()
+    try:
+        db.execute_db("delete_coupon_user",(id,))
+        return json.dumps({"code": 200, "msg": "删除成功"})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
+    finally:
+        db.close()
+@admin_bp.route('/get_coupon_list',methods=['GET'])
+def get_coupon_list():
+    sys_code=request.args.get('sysCode')
+    if not sys_code:
+        return json.dumps({"code":400,"msg":"sysCode不能为空"})
+    token=common_params.get_admin_token()
+    if not token:
+        return json.dumps({"code":401,"msg":"token过期"})
+    try:
+        url=f"https://admin-api-test-arb.jinglewill.com/api/coupon/list?isAvailable=1&sysCode={sys_code}"
+        headers = {"Content-Type": "application/json","Authorization":f'{token}'}
+        response = requests.get(url, timeout=10,headers=headers)
+        return json.dumps({"code": 200, "msg": "获取优惠券列表成功", "data": response.json()})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
+@admin_bp.route('/add_coupon_user',methods=['GET'])
+def add_coupon_user():
+    sys_code=request.args.get('sysCode')
+    mobile=request.args.get('mobile')
+    mobile="+54"+mobile
+    coupon_id=request.args.get('couponId')
+    db=DBUtils()
+    user=db.select_one("get_userId_by_mobile_and_sys_code",(mobile,sys_code))
+    if not user:
+        return json.dumps({"code": 400, "msg": "用户不存在"})
+    user_id=user['id']
+    if not sys_code or not mobile or not coupon_id:
+        return json.dumps({"code": 400, "msg": "参数不能为空"})
+    token=common_params.get_admin_token()
+    if not token:
+        return json.dumps({"code": 401, "msg": "token过期"})
+    data={
+            "accountIds":str(user_id),
+            "couponId":coupon_id,
+            "sysCode":str(sys_code)
+        }
+    url=f"https://admin-api-test-arb.jinglewill.com/api/accountCoupon"
+    try:
+        headers = {"Content-Type": "application/json","Authorization":f'{token}'}
+        response = requests.post(url, timeout=10,headers=headers,json=data)
+        try:
+            resp_data = response.json()
+        except Exception:
+            resp_data = response.text
+        if response.status_code not in (200, 201):
+            return json.dumps({"code": 500, "msg": f"接口请求失败: {response.status_code}", "data": resp_data})
+        return json.dumps({"code": 200, "msg": "新增优惠券成功", "data": resp_data})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
+
+@admin_bp.route('/expired_coupon',methods=['GET'])
+def expired_coupon():
+    id=request.args.get('id')
+    print(id)
+    if not id:
+        return json.dumps({"code": 400, "msg": "id不能为空"})
+    db=DBUtils()
+    try:
+        db.execute_db("update_coupon_user_status",(id,))
+        return json.dumps({"code": 200, "msg": "过期成功"})
+    except Exception as e:
+        return json.dumps({"code": 500, "msg": str(e)})
