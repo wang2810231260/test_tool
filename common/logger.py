@@ -6,7 +6,7 @@ class Logger:
     def __init__(self):
         self.log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
         if not os.path.exists(self.log_path):
-            os.mkdir(self.log_path)
+            os.makedirs(self.log_path, exist_ok=True)
             
         self.log_name = os.path.join(self.log_path, '{}.log'.format(time.strftime('%Y_%m_%d')))
         
