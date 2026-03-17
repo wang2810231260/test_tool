@@ -40,7 +40,7 @@ pipeline {
                     sh "docker stop ${CONTAINER_NAME} || true"
                     sh "docker rm ${CONTAINER_NAME} || true"
                     // 强制释放 5001 端口（防止其他进程占用）
-                    sh "fuser -k 5001/tcp || true"
+                    sh "fuser -k 5002/tcp || true"
 
                     // 启动新容器
                     sh "docker run -d --name ${CONTAINER_NAME} -p 5002:5002 ${DOCKER_IMAGE}:${DOCKER_TAG}"
