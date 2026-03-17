@@ -1,8 +1,6 @@
 <template>
     <section id="order-generation" class="content-section active">
         <h1 class="section-title">订单生成</h1>
-        <h1 class="section-title">test111111</h1>
-
         <div class="form-container">
             <div class="form-group">
                 <label>选择 APP</label>
