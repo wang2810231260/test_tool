@@ -32,5 +32,5 @@ def index():
     return render_template('index.html', sys_codes=sys_codes)
 
 if __name__ == '__main__':
-    # Change port to 5001 to avoid conflicts with AirPlay Receiver on macOS
-    app.run(debug=True, port=5001)
+    # Change port to 5002 to avoid conflicts with AirPlay Receiver on macOS
+    app.run(debug=True, port=5002)

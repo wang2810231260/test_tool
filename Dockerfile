@@ -29,10 +29,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # 暴露 Flask 运行的端口
-EXPOSE 5001
+EXPOSE 5002
 
 # 使用 Gunicorn 运行应用
 # -w 4: 启动 4 个工作进程
-# -b 0.0.0.0:5001: 绑定到所有接口的 5001 端口
+# -b 0.0.0.0:5002: 绑定到所有接口的 5002 端口
 # web_app:app: 模块名:应用实例名
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5001", "web_app:app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5002", \
+    "-k", "gevent", \
+    "web_app:app"]

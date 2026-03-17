@@ -7,3 +7,5 @@ pytest-ordering
 pymysql
 Flask
 gunicorn
+redis
+gevent

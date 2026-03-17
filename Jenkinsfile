@@ -43,7 +43,7 @@ pipeline {
                     sh "fuser -k 5001/tcp || true"
 
                     // 启动新容器
-                    sh "docker run -d --name ${CONTAINER_NAME} -p 5001:5001 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 5002:5002 ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
             }
         }
